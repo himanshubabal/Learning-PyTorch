@@ -7,6 +7,14 @@ from torch.autograd import Variable
 
 import numpy as np
 
+'''
+Credits -
+https://github.com/yunjey/pytorch-tutorial/blob/master/tutorials/01-basics/linear_regression/main.py
+
+Lot of this has been inspired by / taken from above link
+I have tried to explain little bit deeper
+'''
+
 
 # Linear Regression Model
 class LinearRegression(nn.Module):
@@ -25,6 +33,9 @@ class LinearRegression(nn.Module):
         # Prepare Linear Model
         # nn.Linear --> y = mx + b
         self.model = nn.Linear(input_size, output_size)
+        # If GPU available
+        if torch.cuda.is_available():
+            self.model.cuda()
 
 
     # Train the model, given learning rate and no of epochs
@@ -34,8 +45,12 @@ class LinearRegression(nn.Module):
         #                       gradient w.r.t x and y, as we don't update input
         #                     : We only need to update Weights and bias
         #                       So, we calculate grad wrt W and b only
-        x = Variable(torch.from_numpy(self.x_train).float(), requires_grad=False)
-        y = Variable(torch.from_numpy(self.y_train).float(), requires_grad=False)
+        if torch.cuda.is_available():
+            x = Variable(torch.from_numpy(self.x_train).float().cuda(), requires_grad=False)
+            y = Variable(torch.from_numpy(self.y_train).float().cuda(), requires_grad=False)
+        else:
+            x = Variable(torch.from_numpy(self.x_train).float(), requires_grad=False)
+            y = Variable(torch.from_numpy(self.y_train).float(), requires_grad=False)
 
         # Loss : Mean Square Error
         criterion = nn.MSELoss()
@@ -81,7 +96,10 @@ class LinearRegression(nn.Module):
 
     # Plots 2D graph with predicted values : Case - 1
     def plot_model(self, x_test, y_test):
-        predicted = self.model(Variable(torch.from_numpy(x_test))).data.numpy()
+        if torch.cuda.is_available():
+            predicted = self.model(Variable(torch.from_numpy(x_test).cuda())).data.numpy()
+        else:
+            predicted = self.model(Variable(torch.from_numpy(x_test))).data.numpy()
         plt.plot(x_test, y_test, 'r', label='Original data')
         plt.plot(x_test, predicted, label='Fitted line')
         plt.legend()

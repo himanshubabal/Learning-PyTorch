@@ -8,6 +8,15 @@ import numpy as np
 import pandas as pd
 
 
+'''
+Credits -
+https://github.com/vinhkhuc/PyTorch-Mini-Tutorials/blob/master/2_logistic_regression.py
+
+Lot of this has been inspired by / taken from above link
+I have tried to explain little bit deeper
+'''
+
+
 class LogisticRegression(nn.Module):
     def __init__(self, x_train, y_train):
         # Initalising superclass -> nn.Module
@@ -24,6 +33,8 @@ class LogisticRegression(nn.Module):
         # Prepare Linear Model
         # nn.Linear --> y = mx + b
         self.model = nn.Linear(input_size, num_classes)
+        if torch.cuda.is_available():
+            self.model.cuda()
 
 
     # Train the model, given learning rate, no of epochs and batch_size
@@ -48,8 +59,16 @@ class LogisticRegression(nn.Module):
                 #                     : We only need to update Weights and bias
                 #                       So, we calculate grad wrt W and b only
                 # Divide data into batches
-                batch_x = Variable(torch.from_numpy(self.x_train[step*batch_size:(step+1)*batch_size]).float(), requires_grad=False)
-                batch_y = Variable(torch.from_numpy(self.y_train[step*batch_size:(step+1)*batch_size]).long(), requires_grad=False)
+                if torch.cuda.is_available():
+                    batch_x = Variable(torch.from_numpy(self.x_train[step*batch_size:
+                                                       (step+1)*batch_size]).float().cuda(), requires_grad=False)
+                    batch_y = Variable(torch.from_numpy(self.y_train[step*batch_size:
+                                                        (step+1)*batch_size]).long().cuda(), requires_grad=False)
+                else:
+                    batch_x = Variable(torch.from_numpy(self.x_train[step*batch_size:
+                                                            (step+1)*batch_size]).float(), requires_grad=False)
+                    batch_y = Variable(torch.from_numpy(self.y_train[step*batch_size:
+                                                            (step+1)*batch_size]).long(), requires_grad=False)
 
                 # Forward Pass + Backward Pass (backprop) + Optimize
 
@@ -78,18 +97,22 @@ class LogisticRegression(nn.Module):
         correct, total = 0, 0
 
         # Get x and y. We don't need y as a variable as we need not compute loss
-        test_x = Variable(torch.from_numpy(x_test).float(), requires_grad=False)
+        if torch.cuda.is_available():
+            test_x = Variable(torch.from_numpy(x_test).float().cuda(), requires_grad=False)
+        else:
+            test_x = Variable(torch.from_numpy(x_test).float().cuda(), requires_grad=False)
         test_y = torch.from_numpy(y_test).long()
 
         # Get softmax probablities from model
         outputs = self.model.forward(test_x)
 
         # Get label form max probablity
+        # correct += (predicted.cpu() == labels.cpu()).sum()
         _, predicted = torch.max(outputs.data, 1)
         total += test_y.size(0)
 
         # check how many are predicted correctly
-        correct += (predicted == test_y).sum()
+        correct += (predicted.cpu() == test_y.cpu()).sum()
 
         print('Accuracy of the model : %d %%' % (100 * correct / total))
 
