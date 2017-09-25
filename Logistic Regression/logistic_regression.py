@@ -100,7 +100,7 @@ class LogisticRegression(nn.Module):
         if torch.cuda.is_available():
             test_x = Variable(torch.from_numpy(x_test).float().cuda(), requires_grad=False)
         else:
-            test_x = Variable(torch.from_numpy(x_test).float().cuda(), requires_grad=False)
+            test_x = Variable(torch.from_numpy(x_test).float(), requires_grad=False)
         test_y = torch.from_numpy(y_test).long()
 
         # Get softmax probablities from model
@@ -149,4 +149,7 @@ def try_model():
 
 
 if __name__ == "__main__":
+    if torch.cuda.is_available():
+        print('GPU Available')
+
     try_model()

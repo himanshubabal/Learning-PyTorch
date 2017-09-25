@@ -175,7 +175,7 @@ def case_2():
 # ---------------- y1 = m7*x5 + m8*x6 + m9*x1 + c ------------------------
 # ------------------------- y = [y1  y2  y3] -----------------------------
 def case_3():
-    num_epochs = 1000
+    num_epochs = 100
     learning_rate = 0.001
 
     xx = np.float32(np.mgrid[1:10:1, 1:10:1, 1:10:1, 1:10:1, 1:10:1, 1:10:1].reshape(6, -1).T)
@@ -191,6 +191,8 @@ def case_3():
 
 
 if __name__ == "__main__":
+    if torch.cuda.is_available():
+        print('GPU Available')
     case_1()
     case_2()
     case_3()
